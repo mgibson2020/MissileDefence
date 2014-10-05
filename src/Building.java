@@ -6,9 +6,14 @@ import java.awt.geom.Ellipse2D;
 
 public class Building extends GameObject {
 	
-	public Building() {
+	private int x;
+	private int y;
+	
+	public Building(int x, int y) {
 		setHealth(3);
 		setMaxHealth(3);
+		this.x = x;
+		this.y = y;
 	}
 	
 	private void updLook() {
@@ -22,9 +27,6 @@ public class Building extends GameObject {
 	public void render(Graphics g) {
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setColor(Color.BLACK);		
-		g2d.fillRect(50, 0, 30, 30);
-		g2d.drawRect(550, 50, 50, 50);
-
-		g2d.draw(new Ellipse2D.Double(0, 100, 30, 30));
+		g2d.fillRect(x, y, 50, 50);
 	}
 }

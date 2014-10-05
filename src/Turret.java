@@ -5,8 +5,11 @@ public class Turret extends Building {
 	
 	private int ammo;
 	private int maxAmmo;
+	private int x;
+	private int y;
 	
-	public Turret() {
+	public Turret(int x, int y) {
+		super(x,y);
 		setHealth(6);
 		setMaxHealth(6);
 		ammo = 5;

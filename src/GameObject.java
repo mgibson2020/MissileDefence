@@ -1,5 +1,7 @@
 import java.awt.Graphics;
 
+import javax.swing.JPanel;
+
 public abstract class GameObject {
 	private int maxHealth = 1;
 	private int health = getMaxHealth();
