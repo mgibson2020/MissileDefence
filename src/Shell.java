@@ -13,7 +13,7 @@ public class Shell extends Projectile{
 		
 	}
 	
-	public void update(int u) {
+	public void update() {
 		
 	}
 	

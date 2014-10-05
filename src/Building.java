@@ -1,32 +1,34 @@
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Ellipse2D;
-
 
 public class Building extends GameObject {
+	protected int maxHealth = 1;
+	protected int health = 1;
+	protected int x;
+	protected int y = 0;
+	protected MissileDefence game;
 	
-	private int x;
-	private int y;
+	protected int width = 35;
+	protected int height = 75;
 	
-	public Building(int x, int y) {
-		setHealth(3);
-		setMaxHealth(3);
+	public Building() {}
+	
+	public Building(MissileDefence game, int x) {
+		this.game = game;
 		this.x = x;
-		this.y = y;
+
+		maxHealth = health = 3;
 	}
 	
-	private void updLook() {
+	public void update() {
+		height = health*15;
 		
-	}
-	
-	public void update(int u) {
-		
+		y = game.getHeight() - game.groundHeight;
 	}
 	
 	public void render(Graphics g) {
-		Graphics2D g2d = (Graphics2D) g;
-		g2d.setColor(Color.BLACK);		
-		g2d.fillRect(x, y, 50, 50);
+		g.setColor(new Color(150,200,255));		
+		g.fillRect(x-width/2, y-height, width, height);
 	}
 }

@@ -13,7 +13,7 @@ public class Missile extends Projectile {
 		
 	}
 	
-	public void update(int u) {
+	public void update() {
 		
 	}
 	

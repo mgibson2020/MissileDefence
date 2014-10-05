@@ -13,10 +13,6 @@ public abstract class Projectile extends GameObject {
 		return directionY;
 	}
 	
-	private void updLook() {
-		
-	}
-	
 	private void collision() {
 		
 	}
