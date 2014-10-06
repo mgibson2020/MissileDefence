@@ -1,13 +1,11 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 
 public class Building extends GameObject {
 	protected int maxHealth = 1;
 	protected int health = 1;
 	protected int x;
 	protected int y = 0;
-	protected MissileDefence game;
 	
 	protected int width = 35;
 	protected int height = 75;

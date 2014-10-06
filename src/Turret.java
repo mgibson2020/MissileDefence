@@ -1,8 +1,5 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.MouseInfo;
-import java.awt.Point;
-
 
 public class Turret extends Building {
 	private int ammo;
@@ -60,6 +57,13 @@ public class Turret extends Building {
 		g.setColor(Color.WHITE);		
 		g.fillRect(x-width/2, y-height/2, width, height/2);
 		g.fillOval(x-width/2, y-height, width, height);
+		
+		double movex, movey;
+		
+		movex = Math.cos(game.shootAngle)*20;
+		movey = Math.sin(game.shootAngle)*20;
+		
+		g.fillRect((int)(x+movex-2.5),(int)(y-height/2+movey),5,5);
 		
 		g.setColor(new Color(100,100,100));	
 		g.fillRect(x-width/2, y+8, width, 8);

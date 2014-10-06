@@ -1,16 +1,22 @@
 
 public abstract class Projectile extends GameObject {
+	protected double x, y;
+	protected double moveX, moveY;
 	
-	public int speed;
-	public long directionX;
-	public long directionY;
-	
-	private long calcMoveX() {
-		return directionX;
+	public Projectile(MissileDefence game, int x, int y, double moveX, double moveY) {
+		this.game = game;
+		this.x = x;
+		this.y = y;
+		this.moveX = moveX;
+		this.moveY = moveY;
 	}
 	
-	private long calcMoveY() {
-		return directionY;
+	public void update() {
+		x += moveX;
+		y += moveY;
+		
+		if (x < -50 || x > game.getWidth()+50 || y < -50 || y > game.getWidth()-game.groundHeight)
+			canRemove = true;
 	}
 	
 	private void collision() {
