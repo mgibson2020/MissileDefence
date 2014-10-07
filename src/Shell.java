@@ -7,8 +7,8 @@ import java.awt.geom.AffineTransform;
 
 public class Shell extends Projectile{
 	
-	public Shell(MissileDefence game, int x, int y, double moveX, double moveY) {
-		super(game, x, y, moveX, moveY);
+	public Shell(MissileDefence game, int x, int y, double moveX, double moveY, double angle) {
+		super(game, x, y, moveX, moveY, angle);
 	}
 
 	private void collision() {
@@ -24,7 +24,7 @@ public class Shell extends Projectile{
 		
 		g2d.setColor(Color.WHITE);
 		g2d.translate(x,y);
-		g2d.rotate(game.shootAngle);
+		g2d.rotate(angle);
 		g2d.draw(shell);
 		g2d.fill(shell);
 		

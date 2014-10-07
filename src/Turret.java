@@ -24,6 +24,11 @@ public class Turret extends Building {
 		
 	}
 	
+	public void startReload() {
+		ammo = 0;
+		reloadTime = maxReloadTime;
+	}
+	
 	private void reload() {
 		ammo = maxAmmo;
 	}
@@ -47,7 +52,7 @@ public class Turret extends Building {
 	public int getMaxReloadTime() {
 		return maxReloadTime;
 	}
-
+	
 	public Shell shoot() {
 		double moveX, moveY, startX, startY;
 		
@@ -60,7 +65,7 @@ public class Turret extends Building {
 		if (ammo <= 0)
 			reloadTime = maxReloadTime;
 		
-		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY);
+		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY,game.shootAngle);
 	}
 	
 	public void update() {

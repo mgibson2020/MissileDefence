@@ -64,6 +64,8 @@ public class MissileDefence extends JPanel implements MouseListener {
 		objectList.add(buildingList);
 		objectList.add(missileList);
 		
+		missileList.add(new Missile(this,this.getWidth()/2,50,0,0,Math.PI*3/2));
+		
 		int width, xAmount, tX;
 		startTime = System.currentTimeMillis();
 		
@@ -152,7 +154,6 @@ public class MissileDefence extends JPanel implements MouseListener {
 		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
 		
 		// Draw Ammo Indicator
-		
 		boolean loaded = (turret.getAmmo() > 0);
 		
 		int ammo=turret.getAmmo(), maxAmmo=turret.getMaxAmmo(), ammoX=mouse.x-16, ammoY=mouse.y+24;
@@ -232,9 +233,13 @@ public class MissileDefence extends JPanel implements MouseListener {
 	}
 
 	@Override
-	public void mousePressed(MouseEvent arg0) {
-		if (turret.canShoot())
-			shellList.add(turret.shoot());
+	public void mousePressed(MouseEvent e) {
+		if (SwingUtilities.isLeftMouseButton(e)) {
+			if (turret.canShoot())
+				shellList.add(turret.shoot());
+		} else {
+			turret.startReload();
+		}
 	}
 
 	@Override

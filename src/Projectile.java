@@ -1,14 +1,15 @@
 
 public abstract class Projectile extends GameObject {
 	protected double x, y;
-	protected double moveX, moveY;
+	protected double moveX, moveY, angle;
 	
-	public Projectile(MissileDefence game, int x, int y, double moveX, double moveY) {
+	public Projectile(MissileDefence game, int x, int y, double moveX, double moveY, double angle) {
 		this.game = game;
 		this.x = x;
 		this.y = y;
 		this.moveX = moveX;
 		this.moveY = moveY;
+		this.angle = angle;
 	}
 	
 	public void update() {

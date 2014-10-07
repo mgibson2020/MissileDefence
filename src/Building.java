@@ -17,10 +17,11 @@ public class Building extends GameObject {
 		this.x = x;
 
 		maxHealth = health = 3;
+		height = health*15;
 	}
 	
 	public void update() {
-		height = health*15;
+		
 		
 		y = game.getHeight() - game.groundHeight;
 	}
