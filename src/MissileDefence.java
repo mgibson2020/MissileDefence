@@ -10,9 +10,11 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class MissileDefence extends JPanel implements MouseListener {
@@ -20,6 +22,9 @@ public class MissileDefence extends JPanel implements MouseListener {
 	public int groundHeight = 50;
 	final public Color BLACK = new Color(5,5,5);
 	public double shootAngle = 0;
+	long startTime;
+	long timer;
+	long tempTime;
 
 	List<List<GameObject>> objectList = new ArrayList<List<GameObject>>();
 	List<GameObject> buildingList = new ArrayList<GameObject>();
@@ -28,7 +33,7 @@ public class MissileDefence extends JPanel implements MouseListener {
 	Turret turret;
 	
 	Point mouse = MouseInfo.getPointerInfo().getLocation();
-	
+	 
 	public MissileDefence() {
 		this.addMouseListener(this);
 	}
@@ -39,6 +44,7 @@ public class MissileDefence extends JPanel implements MouseListener {
 		objectList.add(missileList);
 		
 		int width, xAmount, tX;
+		startTime = System.currentTimeMillis();
 		
 		width = this.getWidth();
 		xAmount = 100;
@@ -55,6 +61,9 @@ public class MissileDefence extends JPanel implements MouseListener {
 	
 	public void update() {
 		mouse = MouseInfo.getPointerInfo().getLocation();
+		SwingUtilities.convertPointFromScreen(mouse, this);
+		tempTime = System.currentTimeMillis();
+		timer = tempTime - startTime;
 		
 		turret.update();
 		
@@ -116,6 +125,7 @@ public class MissileDefence extends JPanel implements MouseListener {
 		g2d.setColor(Color.WHITE);
 		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
 		//g2d.drawString(String.valueOf(Math.toDegrees(Math.atan2(mouse.y-turret.y, mouse.x - turret.x))), this.getWidth()/2-50, 30);
+		g2d.drawString(String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(timer), TimeUnit.MILLISECONDS.toSeconds(timer) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer))),700,50);
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
