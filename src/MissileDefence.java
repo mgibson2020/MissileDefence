@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -6,6 +7,7 @@ import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -15,8 +17,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javafx.scene.shape.Circle;
+
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -43,10 +48,17 @@ public class MissileDefence extends JPanel implements MouseListener {
 	}
 	
 	public void startGame() {
+		// Load the cursor image
 		try {
 			cursorImage = ImageIO.read(new File("img/cursor.png"));
 		}
-		catch (Exception e) {}
+		catch (Exception e) {
+			JOptionPane.showMessageDialog(this.getParent(), "ERROR: Cannot load the cursor image!","Cursor Load Error",JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
+		}
+		
+		// Hide the cursor with a blank image
+		this.getParent().setCursor(Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(16,16,BufferedImage.TYPE_INT_ARGB), new Point(0,0), "Shoot Cursor"));
 		
 		objectList.add(shellList);
 		objectList.add(buildingList);
@@ -76,7 +88,7 @@ public class MissileDefence extends JPanel implements MouseListener {
 		
 		turret.update();
 		
-		shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y, mouse.x - turret.x));
+		shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y+turret.height/2, mouse.x - turret.x));
 		
 		if (shootAngle > 0) {
 			if (shootAngle > 90)
@@ -130,14 +142,44 @@ public class MissileDefence extends JPanel implements MouseListener {
 		}
 
 		////// GUI COMPONENTS //////
-		// Cursor
-		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
-		
 		// Timer
 		g2d.setColor(Color.WHITE);
 		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
 		//g2d.drawString(String.valueOf(Math.toDegrees(Math.atan2(mouse.y-turret.y, mouse.x - turret.x))), this.getWidth()/2-50, 30);
 		g2d.drawString(String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(timer), TimeUnit.MILLISECONDS.toSeconds(timer) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer))),700,50);
+		
+		// Cursor
+		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
+		
+		// Draw Ammo Indicator
+		
+		boolean loaded = (turret.getAmmo() > 0);
+		
+		int ammo=turret.getAmmo(), maxAmmo=turret.getMaxAmmo(), ammoX=mouse.x-16, ammoY=mouse.y+24;
+		
+		for (int i=0;i<maxAmmo;i++) {
+			loaded = (i < ammo);
+			
+			if (!loaded) {
+				g2d.setColor(Color.GRAY);
+			}
+			
+			g2d.drawOval(ammoX, ammoY, 2, 2);
+			
+			if (loaded)
+				g2d.fillOval(ammoX, ammoY, 2, 2);
+			
+			ammoX += 8;
+		}
+		
+		if (ammo <= 0)
+		{
+			g2d.setColor(Color.WHITE);
+			
+			double reloadTime = turret.getReloadTime(), maxReloadTime = turret.getMaxReloadTime();
+			
+			g2d.fillRect((int)(mouse.x-16*(reloadTime/maxReloadTime)), ammoY, (int)(36*(reloadTime/maxReloadTime)), 4);
+		}
 	}
 	
 	public static void main(String[] args) throws InterruptedException {

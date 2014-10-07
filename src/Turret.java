@@ -5,7 +5,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 public class Turret extends Building {
-	private int ammo, maxAmmo, reloadTime;
+	private int ammo, maxAmmo, reloadTime, maxReloadTime;
 	private int temp=100;
 	
 	public Turret(MissileDefence game) {
@@ -14,6 +14,7 @@ public class Turret extends Building {
 		health = 6;
 		ammo = 5;
 		maxAmmo = 5;
+		maxReloadTime = 150;
 		
 		width = 30;
 		height = 30;
@@ -35,6 +36,18 @@ public class Turret extends Building {
 		return ammo;
 	}
 	
+	public int getMaxAmmo() {
+		return maxAmmo;
+	}
+	
+	public int getReloadTime() {
+		return reloadTime;
+	}
+
+	public int getMaxReloadTime() {
+		return maxReloadTime;
+	}
+
 	public Shell shoot() {
 		double moveX, moveY, startX, startY;
 		
@@ -45,7 +58,7 @@ public class Turret extends Building {
 		
 		ammo--;
 		if (ammo <= 0)
-			reloadTime = 150;
+			reloadTime = maxReloadTime;
 		
 		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY);
 	}
