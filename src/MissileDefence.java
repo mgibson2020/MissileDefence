@@ -2,29 +2,33 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
 public class MissileDefence extends JPanel implements MouseListener {
-	//Building testBuild;
 	public int groundHeight = 50;
 	final public Color BLACK = new Color(5,5,5);
 	public double shootAngle = 0;
 	long startTime;
 	long timer;
 	long tempTime;
+	BufferedImage cursorImage;
 
 	List<List<GameObject>> objectList = new ArrayList<List<GameObject>>();
 	List<GameObject> buildingList = new ArrayList<GameObject>();
@@ -39,6 +43,11 @@ public class MissileDefence extends JPanel implements MouseListener {
 	}
 	
 	public void startGame() {
+		try {
+			cursorImage = ImageIO.read(new File("img/cursor.png"));
+		}
+		catch (Exception e) {}
+		
 		objectList.add(shellList);
 		objectList.add(buildingList);
 		objectList.add(missileList);
@@ -76,13 +85,6 @@ public class MissileDefence extends JPanel implements MouseListener {
 				shootAngle = 0;
 		}
 		
-		if (shootAngle > 180) {
-			if (shootAngle < 270)
-				shootAngle = 180;
-			else
-				shootAngle = 0;
-		}
-		
 		shootAngle = Math.toRadians(shootAngle);
 		
 		for (List<GameObject> list : objectList) {
@@ -109,19 +111,29 @@ public class MissileDefence extends JPanel implements MouseListener {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 				RenderingHints.VALUE_ANTIALIAS_ON);
 
+		////// GAME OBJECTS //////
+		// Background
 		g2d.setColor(BLACK);		
 		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
+		// Ground
 		g2d.setColor(Color.DARK_GRAY);		
 		g2d.fillRect(0, this.getHeight()-groundHeight, this.getWidth(), groundHeight);
 		
+		// Turret
 		turret.render(g2d);
 		
+		// Shells, Missiles, and Buildings
 		for (List<GameObject> list : objectList) {
 			for (GameObject obj : list)
 				obj.render(g2d);
 		}
 
+		////// GUI COMPONENTS //////
+		// Cursor
+		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
+		
+		// Timer
 		g2d.setColor(Color.WHITE);
 		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
 		//g2d.drawString(String.valueOf(Math.toDegrees(Math.atan2(mouse.y-turret.y, mouse.x - turret.x))), this.getWidth()/2-50, 30);
@@ -179,13 +191,8 @@ public class MissileDefence extends JPanel implements MouseListener {
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		double moveX, moveY;
-		
-		moveX = Math.cos(shootAngle)*2;
-		moveY = Math.sin(shootAngle)*2;
-		
-		Shell shell = new Shell(this,turret.x,turret.y-turret.height/2, moveX, moveY);
-		shellList.add(shell);	
+		if (turret.canShoot())
+			shellList.add(turret.shoot());
 	}
 
 	@Override

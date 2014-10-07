@@ -1,10 +1,11 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 
 public class Turret extends Building {
-	private int ammo;
-	private int maxAmmo;
-	
+	private int ammo, maxAmmo, reloadTime;
 	private int temp=100;
 	
 	public Turret(MissileDefence game) {
@@ -23,20 +24,42 @@ public class Turret extends Building {
 	}
 	
 	private void reload() {
-		
+		ammo = maxAmmo;
 	}
 	
-	public void setAmmo(int a) {
-		
+	public boolean canShoot() {
+		return (ammo > 0);
 	}
 	
-	public void getAmmo(int a) {
+	public int getAmmo() {
+		return ammo;
+	}
+	
+	public Shell shoot() {
+		double moveX, moveY, startX, startY;
 		
+		moveX = Math.cos(game.shootAngle)*2;
+		moveY = Math.sin(game.shootAngle)*2;
+		startX = moveX*10;
+		startY = moveY*10;
+		
+		ammo--;
+		if (ammo <= 0)
+			reloadTime = 150;
+		
+		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY);
 	}
 	
 	public void update() {
 		x = game.getWidth()/2;
 		y = game.getHeight() - game.groundHeight*2;
+		
+		if (reloadTime > 0) {
+			reloadTime--;
+			
+			if (reloadTime <= 0)
+				reload();
+		}
 		
 		temp--;
 		
@@ -51,24 +74,28 @@ public class Turret extends Building {
 	}
 	
 	public void render(Graphics g) {
-		g.setColor(Color.DARK_GRAY);
-		g.fillRect(x-width/2-10, y, width+20, game.groundHeight);
+		Graphics2D g2d = (Graphics2D)g;
+		g2d.setColor(Color.DARK_GRAY);
+		g2d.fillRect(x-width/2-10, y, width+20, game.groundHeight);
 		
-		g.setColor(Color.WHITE);		
-		g.fillRect(x-width/2, y-height/2, width, height/2);
-		g.fillOval(x-width/2, y-height, width, height);
+		g2d.setColor(Color.WHITE);		
+		g2d.fillRect(x-width/2, y-height/2, width, height/2);
+		g2d.fillOval(x-width/2, y-height, width, height);
 		
-		double movex, movey;
+		AffineTransform oldXForm = g2d.getTransform();
+		Rectangle turret = new Rectangle(5,-3,20,6);
+
+		g2d.translate((int)x, (int)y-(height/2));
+		g2d.rotate(game.shootAngle);
+		g2d.draw(turret);
+		g2d.fill(turret);
 		
-		movex = Math.cos(game.shootAngle)*20;
-		movey = Math.sin(game.shootAngle)*20;
+		g2d.setTransform(oldXForm);
 		
-		g.fillRect((int)(x+movex-2.5),(int)(y-height/2+movey),5,5);
+		g2d.setColor(new Color(100,100,100));	
+		g2d.fillRect(x-width/2, y+8, width, 8);
 		
-		g.setColor(new Color(100,100,100));	
-		g.fillRect(x-width/2, y+8, width, 8);
-		
-		g.setColor(new Color(200,200,200));
-		g.fillRect(x-width/2, y+8, (int)(width*((double)health/maxHealth)), 8);
+		g2d.setColor(new Color(200,200,200));
+		g2d.fillRect(x-width/2, y+8, (int)(width*((double)health/maxHealth)), 8);
 	}
 }
