@@ -4,11 +4,11 @@ import java.awt.*;
 import java.awt.event.*;
 
 @SuppressWarnings("serial")
-public class MissileDefence extends JFrame implements ActionListener {
+public class MissileDefence extends JFrame {
 	private JPanel deck, mainMenu;
 	private Game game;
 	private CardLayout cardManager;
-	JButton jbtStart;
+	//JButton jbtStart;
 	
 	public MissileDefence() {
 		Container container = getContentPane();
@@ -19,14 +19,10 @@ public class MissileDefence extends JFrame implements ActionListener {
 		
 		container.add(deck);
 		
-		mainMenu = new JPanel();
+		mainMenu = new MainMenu();
 		game = new Game();
 		
-		jbtStart = new JButton("Start Game");
-		
-		jbtStart.addActionListener(this);
-		
-		mainMenu.add(jbtStart);
+		//mainMenu.add(jbtStart);
 		
 		deck.add(mainMenu, "Menu");
 		deck.add(game, "Game");
@@ -38,7 +34,21 @@ public class MissileDefence extends JFrame implements ActionListener {
 		
 	}
 	
-	public void actionPerformed(ActionEvent e) {
+	public void startGame() {
+		try {
+			game.startGame();
+			
+			cardManager.show(deck, "Game");
+			
+			game.run();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
+	/*public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		
 		if (source == jbtStart)
@@ -55,7 +65,7 @@ public class MissileDefence extends JFrame implements ActionListener {
 			
 			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		}
-	}
+	}*/
 	
 	public static void main(String[] args) {
 		JFrame frame = new MissileDefence();
