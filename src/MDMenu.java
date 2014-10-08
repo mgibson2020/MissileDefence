@@ -2,10 +2,13 @@ import java.awt.event.*;
 import javax.swing.*;
 
 @SuppressWarnings("serial")
-public class MainMenu extends JPanel implements ActionListener {
+public class MDMenu extends JPanel implements ActionListener {
+	MDMain main;
 	JButton jbtStart;
 	
-	public MainMenu() {
+	public MDMenu(MDMain main) {
+		this.main = main;
+		
 		jbtStart = new JButton("Start Game");
 		
 		add(jbtStart);
@@ -16,9 +19,8 @@ public class MainMenu extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		
-		if (source == jbtStart)
-		{			
-			
+		if (source == jbtStart) {			
+			main.newGame();
 		}
 	}
 }

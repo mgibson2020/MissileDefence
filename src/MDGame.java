@@ -1,9 +1,7 @@
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
@@ -24,13 +22,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 @SuppressWarnings("serial")
-public class Game extends JPanel implements MouseListener {
-	public int groundHeight = 50;
+public class MDGame extends JPanel implements MouseListener {
+	MDMain main;
+	
 	final public Color BLACK = new Color(5,5,5);
+	
+	public int groundHeight = 50;
 	public double shootAngle = 0;
-	long startTime;
-	long timer;
-	long tempTime;
+	long startTime, timer, tempTime;
+	
 	BufferedImage cursorImage;
 	
 	boolean running = false;
@@ -47,7 +47,7 @@ public class Game extends JPanel implements MouseListener {
 	public static void main(String[] args) throws InterruptedException {
 		JFrame frame = new JFrame("GAME TEST - Missle Defence");
 		
-		Game game = new Game();
+		MDGame game = new MDGame();
 		
 		frame.add(game);
 		frame.setSize(800, 600);
@@ -64,7 +64,11 @@ public class Game extends JPanel implements MouseListener {
 		}
 	}
 	
-	public Game() {}
+	public MDGame() {}
+	
+	public MDGame(MDMain main) {
+		this.main = main;
+	}
 	
 	public void startGame() {
 		addMouseListener(this);
@@ -100,6 +104,28 @@ public class Game extends JPanel implements MouseListener {
 		}
 		
 		turret = new Turret(this);
+		running = true;
+	}
+	
+	public void run() throws InterruptedException {
+		Thread loop = new Thread() {
+			public void run() {
+				try {
+					gameLoop();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		loop.start();
+	}
+	
+	private void gameLoop() throws InterruptedException {
+		while (running) {
+			update();
+			repaint();
+			Thread.sleep(10);
+		}
 	}
 	
 	public void update() {
@@ -141,9 +167,8 @@ public class Game extends JPanel implements MouseListener {
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		boolean done = false;
-			
-		System.out.println("TEST PAINT");
+		
+		if (!running) return;
 		
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -207,26 +232,7 @@ public class Game extends JPanel implements MouseListener {
 		}
 	}
 	
-	public void run() throws InterruptedException {
-		Thread loop = new Thread() {
-			public void run() {
-				try {
-					gameLoop();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		loop.start();
-	}
 	
-	private void gameLoop() throws InterruptedException {
-		while (running) {
-			update();
-			repaint();
-			Thread.sleep(10);
-		}
-	}
 
 	public void removeFromList(Shell shell) {
 		shellList.remove(shell);

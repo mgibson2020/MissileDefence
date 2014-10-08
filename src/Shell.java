@@ -7,7 +7,7 @@ import java.awt.geom.AffineTransform;
 
 public class Shell extends Projectile{
 	
-	public Shell(Game game, int x, int y, double moveX, double moveY, double angle) {
+	public Shell(MDGame game, int x, int y, double moveX, double moveY, double angle) {
 		super(game, x, y, moveX, moveY, angle);
 	}
 

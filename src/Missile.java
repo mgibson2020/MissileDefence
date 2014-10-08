@@ -7,7 +7,7 @@ import java.awt.geom.AffineTransform;
 
 public class Missile extends Projectile {
 	
-	public Missile(Game game, int x, int y, double moveX, double moveY, double angle) {
+	public Missile(MDGame game, int x, int y, double moveX, double moveY, double angle) {
 		super(game, x, y, moveX, moveY, angle);
 	}
 

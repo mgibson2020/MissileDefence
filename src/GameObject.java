@@ -2,7 +2,7 @@ import java.awt.Graphics;
 
 public abstract class GameObject {
 	public boolean canRemove = false;
-	protected Game game;
+	protected MDGame game;
 	
 	private void onDeath() {
 		

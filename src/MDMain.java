@@ -1,16 +1,14 @@
 import javax.swing.*;
 
 import java.awt.*;
-import java.awt.event.*;
 
 @SuppressWarnings("serial")
-public class MissileDefence extends JFrame {
+public class MDMain extends JFrame {
 	private JPanel deck, mainMenu;
-	private Game game;
+	private MDGame game;
 	private CardLayout cardManager;
-	//JButton jbtStart;
 	
-	public MissileDefence() {
+	public MDMain() {
 		Container container = getContentPane();
 		
 		deck = new JPanel();
@@ -19,10 +17,8 @@ public class MissileDefence extends JFrame {
 		
 		container.add(deck);
 		
-		mainMenu = new MainMenu();
-		game = new Game();
-		
-		//mainMenu.add(jbtStart);
+		mainMenu = new MDMenu(this);
+		game = new MDGame(this);
 		
 		deck.add(mainMenu, "Menu");
 		deck.add(game, "Game");
@@ -34,41 +30,22 @@ public class MissileDefence extends JFrame {
 		
 	}
 	
-	public void startGame() {
+	public void newGame() {
 		try {
 			game.startGame();
 			
 			cardManager.show(deck, "Game");
 			
 			game.run();
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
-	/*public void actionPerformed(ActionEvent e) {
-		Object source = e.getSource();
-		
-		if (source == jbtStart)
-		{			
-			try {
-				game.startGame();
-				
-				cardManager.show(deck, "Game");
-				
-				game.run();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-			
-			this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		}
-	}*/
-	
 	public static void main(String[] args) {
-		JFrame frame = new MissileDefence();
+		JFrame frame = new MDMain();
 		frame.setTitle("Missile Defence");
 		frame.setSize(800, 600);
 		
@@ -78,17 +55,6 @@ public class MissileDefence extends JFrame {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 		frame.setVisible(true);
-		
-		//Game game = new Game();
-		//frame.add(game);
-		
-		/*game.startGame();
-		
-		while (true) {
-			game.update();
-			game.repaint();
-			Thread.sleep(10);
-		}*/
 	}
 }
 
