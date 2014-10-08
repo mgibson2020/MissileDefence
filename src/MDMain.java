@@ -8,7 +8,11 @@ public class MDMain extends JFrame {
 	private MDGame game;
 	private CardLayout cardManager;
 	
+	public long[] highScores;
+	
 	public MDMain() {
+		readHighscores();
+		
 		Container container = getContentPane();
 		
 		deck = new JPanel();
@@ -17,7 +21,7 @@ public class MDMain extends JFrame {
 		
 		container.add(deck);
 		
-		mainMenu = new MDMenu(this);
+		mainMenu = new MDMenu(this, highScores);
 		game = new MDGame(this);
 		
 		deck.add(mainMenu, "Menu");
@@ -27,7 +31,11 @@ public class MDMain extends JFrame {
 		
 		setResizable(false);
 		setVisible(true);
-		
+	}
+	
+	public void readHighscores() {
+		// This will be replaced with a text reader
+		highScores = new long[10];
 	}
 	
 	public void newGame() {
@@ -46,7 +54,7 @@ public class MDMain extends JFrame {
 	
 	public static void main(String[] args) {
 		JFrame frame = new MDMain();
-		frame.setTitle("Missile Defence");
+		frame.setTitle("Missile Defense");
 		frame.setSize(800, 600);
 		
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();

@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -8,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -28,8 +30,9 @@ public class MDGame extends JPanel implements MouseListener {
 	final public Color BLACK = new Color(5,5,5);
 	
 	public int groundHeight = 50;
-	public double shootAngle = 0;
+	public double shootAngle = 0, missileSpeed = 0.5;
 	long startTime, timer, tempTime;
+	public final boolean showBoundingBox = false;
 	
 	BufferedImage cursorImage;
 	
@@ -54,6 +57,9 @@ public class MDGame extends JPanel implements MouseListener {
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		
+		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);	
 		
 		game.startGame();
 		
@@ -63,12 +69,18 @@ public class MDGame extends JPanel implements MouseListener {
 			Thread.sleep(10);
 		}
 	}
+
+	
+	//////////// CONSTRUCTORS ////////////
 	
 	public MDGame() {}
 	
 	public MDGame(MDMain main) {
 		this.main = main;
 	}
+	
+
+	//////////// GAME INITIATION ////////////
 	
 	public void startGame() {
 		addMouseListener(this);
@@ -88,7 +100,8 @@ public class MDGame extends JPanel implements MouseListener {
 		objectList.add(buildingList);
 		objectList.add(missileList);
 		
-		missileList.add(new Missile(this,this.getWidth()/2,50,0,0,Math.PI*3/2));
+		// Stationary Test Missile
+		//missileList.add(new Missile(this,this.getWidth()/2,50,0,0,Math.PI*-3/2));
 		
 		int width, xAmount, tX;
 		startTime = System.currentTimeMillis();
@@ -107,6 +120,14 @@ public class MDGame extends JPanel implements MouseListener {
 		running = true;
 	}
 	
+	public void endGame() {
+		JOptionPane.showMessageDialog(null, "FAILURE!");
+		
+	}
+
+
+	//////////// GAME THREADING ////////////
+	
 	public void run() throws InterruptedException {
 		Thread loop = new Thread() {
 			public void run() {
@@ -119,6 +140,9 @@ public class MDGame extends JPanel implements MouseListener {
 		};
 		loop.start();
 	}
+
+
+	//////////// GAME LOOP ////////////
 	
 	private void gameLoop() throws InterruptedException {
 		while (running) {
@@ -127,14 +151,21 @@ public class MDGame extends JPanel implements MouseListener {
 			Thread.sleep(10);
 		}
 	}
+
+
+	//////////// GAME LOGIC ////////////
 	
 	public void update() {
+		
+		missileSpeed = 0.5 + (0.125 * Math.floor(timer/100000));
+		
+		if (Math.random()<0.005)
+			createMissile();
+		
 		mouse = MouseInfo.getPointerInfo().getLocation();
 		SwingUtilities.convertPointFromScreen(mouse, this);
 		tempTime = System.currentTimeMillis();
 		timer = tempTime - startTime;
-		
-		turret.update();
 		
 		shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y+turret.height/2, mouse.x - turret.x));
 		
@@ -147,13 +178,17 @@ public class MDGame extends JPanel implements MouseListener {
 		
 		shootAngle = Math.toRadians(shootAngle);
 		
+		turret.update();
+		
 		for (List<GameObject> list : objectList) {
 			Iterator<GameObject> iter = list.iterator();
 			
 			while (iter.hasNext())
 			{
 				GameObject obj = iter.next();
-				obj.update();
+				
+				if (!obj.canRemove)
+					obj.update();
 				
 				if (obj.canRemove)
 					iter.remove();
@@ -163,6 +198,66 @@ public class MDGame extends JPanel implements MouseListener {
 				obj.update();
 		}
 	}
+	
+	// Creates a missile with a random target building or turret.
+	// Note: Angle is currently not working properly. It doesn't always point in the correct direction.
+	private void createMissile() {
+		int spawnX, spawnY;
+		double angle, moveX, moveY;
+		Building target;
+		
+		spawnX = (int)(Math.random()*getWidth());
+		spawnY = -25;
+		
+		if (Math.round(Math.random())*buildingList.size()<1)
+			target = (Building)turret;
+		else
+			target = (Building)buildingList.get((int)Math.round((Math.random()*(buildingList.size()-1))));
+			
+		angle = Math.abs(Math.atan2(spawnY - target.getY() - target.getHeight()/2, spawnX - target.getX()));
+		
+		// missileSpeed is a class-level variable and gets higher over time
+		moveX = Math.cos(angle)*missileSpeed;
+		moveY = Math.sin(angle)*missileSpeed;
+		
+		missileList.add(new Missile(this,spawnX,spawnY,moveX,moveY,angle));
+	}
+	
+	// Check each missile to see if it collides with something
+	public boolean checkCollisions(Missile m) {
+		boolean hasCollision = false;
+		
+		GameObject[] goArray = shellList.toArray(new GameObject[shellList.size()]);
+		
+		for (GameObject go : goArray) {
+			if (m.collides(go.getArea())) {
+				go.canRemove = true;
+				hasCollision = true;
+			}
+		}
+		
+		goArray = buildingList.toArray(new GameObject[buildingList.size()]);
+		
+		for (GameObject go : goArray) {
+			if (m.collides(go.getArea())) {
+				Building b = (Building)go;
+				b.hit();
+				hasCollision = true;
+			}
+		}
+		
+		if (m.collides(turret.getArea())) {
+			turret.hit();
+			hasCollision = true;
+		}
+		
+		if (m.y > getHeight()-groundHeight)
+			hasCollision = true;
+		
+		return hasCollision;
+	}
+
+	//////////// DRAWING ////////////
 	
 	@Override
 	public void paint(Graphics g) {
@@ -195,33 +290,53 @@ public class MDGame extends JPanel implements MouseListener {
 		////// GUI COMPONENTS //////
 		// Timer
 		g2d.setColor(Color.WHITE);
-		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
-		//g2d.drawString(String.valueOf(Math.toDegrees(Math.atan2(mouse.y-turret.y, mouse.x - turret.x))), this.getWidth()/2-50, 30);
-		g2d.drawString(String.format("%d:%02d", TimeUnit.MILLISECONDS.toMinutes(timer), TimeUnit.MILLISECONDS.toSeconds(timer) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer))),700,50);
+		g2d.setFont(new Font("Verdana", Font.BOLD, 20));
+		
+		// Convert time elapsed to a string with format "HH:mm:MM"
+		String timerStr = String.format("%02d:%02d:%02d", 
+				TimeUnit.MILLISECONDS.toHours(timer),
+				TimeUnit.MILLISECONDS.toMinutes(timer) -  
+				TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timer)),
+				TimeUnit.MILLISECONDS.toSeconds(timer) - 
+				TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer)));
+		// We do this in order to center the string no matter the font, size, or length. It gets a rectangle with the size of the font
+		Rectangle2D strSize = g2d.getFontMetrics().getStringBounds(timerStr, g2d);
+
+		g2d.drawString(timerStr,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight/2 + strSize.getHeight()/2));
+		
+		String mSpdString = "Missile Speed: " + missileSpeed;
+		
+		g2d.setFont(new Font("Verdana", Font.BOLD, 10));
+		strSize = g2d.getFontMetrics().getStringBounds(mSpdString, g2d);
+		g2d.drawString(mSpdString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight*3/4 + strSize.getHeight()/2));
 		
 		// Cursor
 		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
 		
-		// Draw Ammo Indicator
+		// Ammo Indicator
 		boolean loaded = (turret.getAmmo() > 0);
 		
 		int ammo=turret.getAmmo(), maxAmmo=turret.getMaxAmmo(), ammoX=mouse.x-16, ammoY=mouse.y+24;
 		
+		// Draw "ammo dots" for each shell to indicate how much you have left
 		for (int i=0;i<maxAmmo;i++) {
 			loaded = (i < ammo);
 			
+			// If out of ammo at this point, set the color to gray (because it draws from left to right, we do not need logic to change the color to white)
 			if (!loaded) {
 				g2d.setColor(Color.GRAY);
 			}
 			
 			g2d.drawOval(ammoX, ammoY, 2, 2);
 			
+			// If this shell has been fired, don't fill it in
 			if (loaded)
 				g2d.fillOval(ammoX, ammoY, 2, 2);
 			
 			ammoX += 8;
 		}
 		
+		// Draw reload bar on top of the "ammo dots"
 		if (ammo <= 0)
 		{
 			g2d.setColor(Color.WHITE);
@@ -233,7 +348,8 @@ public class MDGame extends JPanel implements MouseListener {
 	}
 	
 	
-
+	//////////// REMOVING OBJECTS FROM LISTS (Deletes the object) ////////////
+	
 	public void removeFromList(Shell shell) {
 		shellList.remove(shell);
 	}
@@ -245,6 +361,9 @@ public class MDGame extends JPanel implements MouseListener {
 	public void removeFromList(Missile missile) {
 		missileList.remove(missile);
 	}
+	
+	
+	//////////// EVENTS ////////////
 	
 	@Override
 	public void mouseClicked(MouseEvent arg0) {

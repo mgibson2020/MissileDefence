@@ -1,6 +1,5 @@
 
 public abstract class Projectile extends GameObject {
-	protected double x, y;
 	protected double moveX, moveY, angle;
 	
 	public Projectile(MDGame game, int x, int y, double moveX, double moveY, double angle) {
@@ -16,12 +15,11 @@ public abstract class Projectile extends GameObject {
 		x += moveX;
 		y += moveY;
 		
-		if (x < -50 || x > game.getWidth()+50 || y < -50 || y > game.getWidth()-game.groundHeight)
+		if (x < -50 || x > game.getWidth()+500 || y < -500 || y > game.getWidth()-game.groundHeight)
 			canRemove = true;
 	}
 	
-	private void collision() {
-		
+	public double getAngle() {
+		return angle;
 	}
-	
 }
