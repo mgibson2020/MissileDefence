@@ -8,7 +8,7 @@ public class Turret extends Building {
 	private int ammo, maxAmmo, reloadTime, maxReloadTime;
 	private int temp=100;
 	
-	public Turret(MissileDefence game) {
+	public Turret(Game game) {
 		this.game = game;
 		maxHealth = 6;
 		health = 6;

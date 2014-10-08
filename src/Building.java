@@ -12,7 +12,7 @@ public class Building extends GameObject {
 	
 	public Building() {}
 	
-	public Building(MissileDefence game, int x) {
+	public Building(Game game, int x) {
 		this.game = game;
 		this.x = x;
 
