@@ -1,3 +1,8 @@
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+
 
 public abstract class Projectile extends GameObject {
 	protected double moveX, moveY, angle;
@@ -21,5 +26,15 @@ public abstract class Projectile extends GameObject {
 	
 	public double getAngle() {
 		return angle;
+	}
+	
+	public Area getArea() {
+		Shape rect = new Rectangle((int)x, (int)y, height, width);
+		AffineTransform transform = AffineTransform.getRotateInstance(angle, x, y);
+		
+		Area a = new Area(rect);
+		a.transform(transform);
+		
+		return a;
 	}
 }

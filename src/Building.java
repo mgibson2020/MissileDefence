@@ -15,6 +15,8 @@ public class Building extends GameObject {
 		maxHealth = health = 3;
 		width = 35;
 		height = health*15;
+		
+		color = new Color(150,200,255);
 	}
 	
 	public void update() {
@@ -24,21 +26,8 @@ public class Building extends GameObject {
 	
 	public void hit() {
 		health--;
-		//height = health*15;
 		
 		if (health < 1)
 			onDeath();
-	}
-	
-	public void render(Graphics g) {
-		Graphics2D g2d = (Graphics2D)g;
-		
-		g.setColor(new Color(150,200,255));		
-		g.fillRect((int)x-width/2, (int)y-height, width, height);
-		
-		if (game.showBoundingBox) {
-			g.setColor(Color.RED);	
-			g2d.draw(getArea().getBounds());
-		}
 	}
 }

@@ -12,25 +12,4 @@ public class Shell extends Projectile{
 		height = 4;
 		width = 4;
 	}
-	
-	public void render(Graphics g) {
-		Graphics2D g2d = (Graphics2D)g;
-		
-		AffineTransform oldXForm = g2d.getTransform();
-		
-		Rectangle shell = new Rectangle(-height,-width/2,height,width);
-		
-		g2d.setColor(Color.WHITE);
-		g2d.translate(x,y);
-		g2d.rotate(angle);
-		g2d.draw(shell);
-		g2d.fill(shell);
-		
-		g2d.setTransform(oldXForm);
-		
-		if (game.showBoundingBox) {
-			g2d.setColor(Color.RED);
-			g2d.draw(getArea());
-		}
-	}
 }
