@@ -6,7 +6,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 public class Turret extends Building {
-	private double shellSpeed = 4;
+	private double shellSpeed = 8;
 	private int ammo, maxAmmo, reloadTime, maxReloadTime;
 	
 	public Turret(MDGame game) {
@@ -23,8 +23,28 @@ public class Turret extends Building {
 		height = 30;
 	}
 	
-	protected void onDeath() {
-		game.endGame();
+	public boolean canShoot() {
+		return (ammo > 0);
+	}
+	
+	public Shell shoot() {
+		double moveX, moveY, startX, startY;
+		
+		// Calculate move x and y based off of speed and angle
+		moveX = Math.cos(game.shootAngle)*shellSpeed;
+		moveY = Math.sin(game.shootAngle)*shellSpeed;
+		
+		// Spawn it at the end of the barrel (moveX and moveY basically do this for us)
+		startX = moveX;
+		startY = moveY;
+		
+		// Remove the ammo and set it to reload if there isn't any left
+		ammo--;
+		if (ammo <= 0)
+			reloadTime = maxReloadTime;
+		
+		// Create the shell object then return it (so it can be added to the shellList)
+		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY,game.shootAngle);
 	}
 	
 	public void startReload() {
@@ -36,41 +56,6 @@ public class Turret extends Building {
 	
 	private void reload() {
 		ammo = maxAmmo;
-	}
-	
-	public boolean canShoot() {
-		return (ammo > 0);
-	}
-	
-	public int getAmmo() {
-		return ammo;
-	}
-	
-	public int getMaxAmmo() {
-		return maxAmmo;
-	}
-	
-	public int getReloadTime() {
-		return reloadTime;
-	}
-
-	public int getMaxReloadTime() {
-		return maxReloadTime;
-	}
-	
-	public Shell shoot() {
-		double moveX, moveY, startX, startY;
-		
-		moveX = Math.cos(game.shootAngle)*shellSpeed;
-		moveY = Math.sin(game.shootAngle)*shellSpeed;
-		startX = moveX*10;
-		startY = moveY*10;
-		
-		ammo--;
-		if (ammo <= 0)
-			reloadTime = maxReloadTime;
-		
-		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY,game.shootAngle);
 	}
 	
 	public void update() {
@@ -87,6 +72,10 @@ public class Turret extends Building {
 			// Reload time decreases as the difficulty mounts
 			maxReloadTime = (int)(150 / game.difficulty);
 		}
+	}
+	
+	protected void onDeath() {
+		game.endGame();
 	}
 	
 	private double healthPercent() {
@@ -136,5 +125,22 @@ public class Turret extends Building {
 			g.setColor(Color.RED);	
 			g2d.draw(getArea().getBounds());
 		}
+	}
+	
+	
+	public int getAmmo() {
+		return ammo;
+	}
+	
+	public int getMaxAmmo() {
+		return maxAmmo;
+	}
+	
+	public int getReloadTime() {
+		return reloadTime;
+	}
+
+	public int getMaxReloadTime() {
+		return maxReloadTime;
 	}
 }

@@ -40,6 +40,8 @@ public class MDGame extends JPanel implements MouseListener {
 	Turret turret;
 	Wall ground, turretStand;
 	
+	//Sound sound;
+	
 	// GameObject lists
 	List<List<GameObject>> objectList = new ArrayList<List<GameObject>>();
 	List<GameObject> buildingList = new ArrayList<GameObject>();
@@ -51,7 +53,7 @@ public class MDGame extends JPanel implements MouseListener {
 	long startTime, timer;
 	
 	// Missile frequency and difficulty
-	public double missileSpeed = 0.25, difficulty = 1;
+	public double missileSpeed = 0.5, difficulty = 1;
 	public int actionInterval = 5, dcInterval = 30, missilesToSpawn = 1;
 	long lastAction = 0, lastDifficultyChange = 0;
 	
@@ -97,6 +99,10 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	public void startGame() {
 		addMouseListener(this);
+
+		//sound = new Sound();
+		Sound.GAMEOVER.play();
+		
 		// Load the cursor image
 		try {
 			cursorImage = ImageIO.read(new File("img/cursor.png"));
@@ -182,12 +188,17 @@ public class MDGame extends JPanel implements MouseListener {
 		// This will adjust difficulty and spawn missiles
 		enemyActions();
 		
+		// Get the current mouse location and convert it to the location relative to the window
 		mouse = MouseInfo.getPointerInfo().getLocation();
 		SwingUtilities.convertPointFromScreen(mouse, this);
+		
+		// Get the time that has elapsed since the game started
 		timer = System.currentTimeMillis() - startTime;
 		
+		// Calculate the shoot angle based off of mouse and turret position
 		shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y+turret.height/2, mouse.x - turret.x));
 		
+		// Prevent the angle from pointing downward
 		if (shootAngle > 0) {
 			if (shootAngle > 90)
 				shootAngle = 180;
@@ -195,10 +206,13 @@ public class MDGame extends JPanel implements MouseListener {
 				shootAngle = 0;
 		}
 		
+		// Convert the angle back to radians
 		shootAngle = Math.toRadians(shootAngle);
 		
+		// Update the turret
 		turret.update();
 		
+		// Update each object in each list
 		for (List<GameObject> list : objectList) {
 			Iterator<GameObject> iter = list.iterator();
 			
@@ -206,15 +220,14 @@ public class MDGame extends JPanel implements MouseListener {
 			{
 				GameObject obj = iter.next();
 				
+				// Only update it if it is not ready to be removed
 				if (!obj.canRemove)
 					obj.update();
 				
+				// If it is ready to be removed, remove it from the list
 				if (obj.canRemove)
 					iter.remove();
 			}
-			
-			for (GameObject obj : list)
-				obj.update();
 		}
 	}
 	
@@ -224,7 +237,7 @@ public class MDGame extends JPanel implements MouseListener {
 		if (difficulty < 10) {
 			// At every difficulty change interval, change the difficulty and skip an action
 			if (timer - lastDifficultyChange >= 1000 * dcInterval) {
-				difficulty += 0.1;
+				difficulty += 0.3;
 				lastDifficultyChange = timer;
 				lastAction = timer;
 			}
@@ -255,6 +268,7 @@ public class MDGame extends JPanel implements MouseListener {
 		double angle, moveX, moveY;
 		Building target;
 		
+		// Spawn the missile in a random location at the top
 		spawnX = (int)(Math.random()*getWidth());
 		spawnY = -25;
 		
@@ -271,6 +285,7 @@ public class MDGame extends JPanel implements MouseListener {
 		moveX = Math.cos(angle)*missileSpeed*difficulty;
 		moveY = Math.sin(angle)*missileSpeed*difficulty;
 		
+		// Create the missile and it to the missile list
 		missileList.add(new Missile(this,spawnX,spawnY,moveX,moveY,angle));
 	}
 	
