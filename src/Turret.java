@@ -1,3 +1,11 @@
+/* 
+ * Program: Turret.java
+ * Project: MissileDefense
+ * Author: J. Ethan Wallace and Michael Gibson
+ * Date Written: 10/05/2014 - 10/08/2014
+ * Abstract: This is the player-controlled turret. It is created in (and implements with) the MDGame class.
+ */
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -6,15 +14,15 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 public class Turret extends Building {
+	// Speed at which the shell travels in the air
 	private double shellSpeed = 8;
 	private int ammo, maxAmmo, reloadTime, maxReloadTime;
 	
+	// Constructor
 	public Turret(MDGame game) {
 		this.game = game;
-		maxHealth = 6;
-		health = 6;
-		ammo = 5;
-		maxAmmo = 5;
+		health = maxHealth = 60;
+		ammo = maxAmmo = 5;
 		maxReloadTime = 150;
 		
 		x = game.getWidth()/2;
@@ -23,10 +31,12 @@ public class Turret extends Building {
 		height = 30;
 	}
 	
+	// Will return whether the turret is able to shoot or not
 	public boolean canShoot() {
 		return (ammo > 0);
 	}
 	
+	// Fires a shell in the direction of the mouse
 	public Shell shoot() {
 		double moveX, moveY, startX, startY;
 		
@@ -43,39 +53,51 @@ public class Turret extends Building {
 		if (ammo <= 0)
 			reloadTime = maxReloadTime;
 		
+		Sound.play("snd/Shoot.wav");
+		
 		// Create the shell object then return it (so it can be added to the shellList)
 		return new Shell(game,(int)(x+startX),(int)(y-height/2+startY),moveX,moveY,game.shootAngle);
 	}
 	
-	public void startReload() {
+	// Will begin the reload process prematurely (as long as at least one shell has been fired and it isn't already reloading)
+	// This event is called in MDGame when the right (or middle) mouse button is clicked
+	public void startReload() {		
 		if (reloadTime == 0 && ammo < maxAmmo) {
 			ammo = 0;
 			reloadTime = maxReloadTime;
 		}
 	}
 	
+	// Reloads the ammunition
 	private void reload() {
+		Sound.play("snd/Reload.wav");
+		
 		ammo = maxAmmo;
 	}
 	
 	public void update() {
-		
-		// If in the middle of reloading, reduce the reload timer and reload if able
-		if (reloadTime > 0) {
-			reloadTime--;
-			
-			if (reloadTime <= 0)
-				reload();
-		}
-		else
+		// When this is "destroyed", the object actually hangs around
+		if (health > 0)
 		{
-			// Reload time decreases as the difficulty mounts
-			maxReloadTime = (int)(150 / game.difficulty);
+			// If in the middle of reloading, reduce the reload timer and reload if able
+			if (reloadTime > 0) {
+				reloadTime--;
+				
+				if (reloadTime <= 0)
+					reload();
+			}
+			else
+			{
+				// Reload time decreases as the difficulty mounts
+				maxReloadTime = (int)(150 / game.difficulty);
+			}
 		}
+		else onDeath();
 	}
 	
 	protected void onDeath() {
-		game.endGame();
+		super.onDeath();
+		game.isEnding = true;
 	}
 	
 	private double healthPercent() {
@@ -84,10 +106,6 @@ public class Turret extends Building {
 	
 	public void render(Graphics g) {
 		Graphics2D g2d = (Graphics2D)g;
-
-		////// The "Stand" //////
-		//g2d.setColor(Color.DARK_GRAY);
-		//g2d.fillRect((int)x-width/2-10, (int)y, width+20, game.groundHeight);
 
 		////// The Base //////
 		g2d.setColor(Color.WHITE);		

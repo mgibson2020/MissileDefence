@@ -1,3 +1,11 @@
+/* 
+ * Program: Wall.java
+ * Project: MissileDefense
+ * Author: J. Ethan Wallace and Michael Gibson
+ * Date Written: 10/05/2014 - 10/08/2014
+ * Abstract: Immobile walls. Just used for drawing and collision. Used in the MDGame class.
+ */
+
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.geom.Area;

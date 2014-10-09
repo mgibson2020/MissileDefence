@@ -1,3 +1,11 @@
+/* 
+ * Program: Missile.java
+ * Project: MissileDefense
+ * Author: J. Ethan Wallace and Michael Gibson
+ * Date Written: 10/05/2014 - 10/08/2014
+ * Abstract: Projectiles created regularly in the MDGame class with the sole purpose of destroying buildings or the turret.
+ */
+
 import java.awt.Color;
 
 public class Missile extends Projectile {

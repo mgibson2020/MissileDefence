@@ -1,3 +1,11 @@
+/* 
+ * Program: Building.java
+ * Project: MissileDefense
+ * Author: J. Ethan Wallace and Michael Gibson
+ * Date Written: 10/05/2014 - 10/08/2014
+ * Abstract: These are the buildings that the player must protect. It is created in (and implements with) the MDGame class.
+ */
+
 import java.awt.Color;
 
 public class Building extends GameObject {
@@ -27,5 +35,11 @@ public class Building extends GameObject {
 		
 		if (health < 1)
 			onDeath();
+	}
+	
+	protected void onDeath() {
+		super.onDeath();
+		
+		Sound.play("snd/BuildingCollapse.wav");
 	}
 }

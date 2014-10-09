@@ -1,6 +1,14 @@
+/* 
+ * Program: MDGame.java
+ * Project: MissileDefense
+ * Author: J. Ethan Wallace and Michael Gibson
+ * Date Written: 10/05/2014 - 10/08/2014
+ * Abstract: This is the game screen. This is where all of the game functions take place. 
+ */
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -16,10 +24,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -34,8 +40,8 @@ public class MDGame extends JPanel implements MouseListener {
 	public final boolean showBoundingBox = false;
 	
 	// Setup
-	boolean running = false;
-	public int groundHeight = 60;
+	boolean running = false, isEnding=false;
+	public int groundHeight = 6;
 	BufferedImage cursorImage;
 	Turret turret;
 	Wall ground, turretStand;
@@ -51,6 +57,7 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	// Timer variables
 	long startTime, timer;
+	long[] hsScores;
 	
 	// Missile frequency and difficulty
 	public double missileSpeed = 0.5, difficulty = 1;
@@ -61,37 +68,13 @@ public class MDGame extends JPanel implements MouseListener {
 	Point mouse = MouseInfo.getPointerInfo().getLocation();
 	public double shootAngle = 0;
 	
-	
-	// USED FOR TESTING
-	public static void main(String[] args) throws InterruptedException {
-		JFrame frame = new JFrame("GAME TEST - Missle Defence");
-		
-		MDGame game = new MDGame();
-		
-		frame.add(game);
-		frame.setSize(800, 600);
-		frame.setVisible(true);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setResizable(false);
-		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		
-		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);	
-		
-		game.startGame();
-		
-		while (true) {
-			game.update();
-			game.repaint();
-			Thread.sleep(10);
-		}
-	}
-	
 ////////////CONSTRUCTORS ////////////
 	
 	public MDGame() {}
 	
-	public MDGame(MDMain main) {
+	public MDGame(MDMain main, long[] hsScores) {
 		this.main = main;
+		this.hsScores = hsScores;
 	}
 	
 
@@ -99,9 +82,6 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	public void startGame() {
 		addMouseListener(this);
-
-		//sound = new Sound();
-		Sound.GAMEOVER.play();
 		
 		// Load the cursor image
 		try {
@@ -114,15 +94,14 @@ public class MDGame extends JPanel implements MouseListener {
 		
 		// Hide the cursor with a blank image
 		this.getParent().setCursor(Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(16,16,BufferedImage.TYPE_INT_ARGB), new Point(0,0), "Shoot Cursor"));
-		
-		objectList.add(shellList);
+
+		// Add list to the objectList in the order that they should execute
 		objectList.add(buildingList);
-		objectList.add(missileList);
 		objectList.add(wallList);
+		objectList.add(shellList);
+		objectList.add(missileList);
 		
-		// Stationary Test Missile
-		//missileList.add(new Missile(this,this.getWidth()/2,50,0,0,Math.PI*-3/2));
-		
+		// Create six buildings, three on each side of the turret
 		int width, xAmount, tX;
 		startTime = System.currentTimeMillis();
 		
@@ -136,22 +115,70 @@ public class MDGame extends JPanel implements MouseListener {
 			buildingList.add(new Building(this,width - (tX + xAmount*i)));
 		}
 		
+		// Create the turret in the middle of the screen
 		turret = new Turret(this);
 		
+		// Create the ground and turretStand objects
 		ground = new Wall(this, 0, getHeight()-groundHeight, getWidth(), groundHeight, Color.DARK_GRAY);
 		turretStand = new Wall(this, (int)(turret.x-turret.width/2-10),(int)(turret.y),turret.width+20,45, Color.DARK_GRAY);
 		
 		wallList.add(ground);
 		wallList.add(turretStand);
 		
-		//(int)x-width/2-10, (int)y, width+20, game.groundHeight)
-		
 		running = true;
 	}
 	
+	// Called when the game ends
 	public void endGame() {
-		JOptionPane.showMessageDialog(null, "FAILURE!");
+		// Stopping game thread
+		running = false;
 		
+		// Clearing all game object variables and listeners
+		for (List<GameObject> list : objectList) {
+			list.clear();
+		}
+		objectList.clear();
+		turret = null;
+		removeMouseListener(this);
+		
+		// Showing game end message
+		String hsName = null;
+		
+		if (timer > hsScores[9]) {
+			while (hsName == null || hsName.length()>20)
+			{
+				hsName = JOptionPane.showInputDialog(null,"Congratulations! You have earned a new high score!\nPlease enter your name for the high score list. (20 char max)");
+				hsName = hsName.trim();
+				
+				if (hsName.length() > 20)
+					JOptionPane.showMessageDialog(null, "Your name cannot be more than 20 characters long.");
+					//hsName = hsName.substring(0,30);
+			}
+		}
+		else
+		{
+			JOptionPane.showMessageDialog(null, "Unfortunately, you have not lasted long enough to beat any high scores.\nPlease try again.");
+		}
+		
+		// Setting the cursor back to default
+		this.getParent().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
+		// Telling the main class that the game is over
+		main.gameOver(hsName, timer);
+	}
+	
+	public long getNextHighScore(long score) {
+		
+		for (int i=0; i<10; i++) {
+			if (score > hsScores[i]) {
+				if (i == 0)
+					return score;
+				else
+					return hsScores[i-1];
+			}
+		}
+		
+		return hsScores[9];
 	}
 
 
@@ -184,33 +211,50 @@ public class MDGame extends JPanel implements MouseListener {
 
 ////////////GAME LOGIC ////////////
 	
-	public void update() {
-		// This will adjust difficulty and spawn missiles
-		enemyActions();
+	public void update() {	
+		// After the fail conditions are met, isEnding will be set to true.
+		// When this happens, it will show a message and call endGame after 5 seconds.
+		if (isEnding) {
+			// End the game 5 seconds after they lose		
+			if (System.currentTimeMillis() - startTime - timer > 5000)
+				endGame();
+			
+			if (turret != null)
+				if (turret.canRemove)
+					turret = null;
+		}
+		else
+		{
+			// This will adjust difficulty and spawn missiles
+			enemyActions();
+			
+			// Get the time that has elapsed since the game started
+			timer = System.currentTimeMillis() - startTime;
+		}
 		
 		// Get the current mouse location and convert it to the location relative to the window
 		mouse = MouseInfo.getPointerInfo().getLocation();
 		SwingUtilities.convertPointFromScreen(mouse, this);
 		
-		// Get the time that has elapsed since the game started
-		timer = System.currentTimeMillis() - startTime;
-		
-		// Calculate the shoot angle based off of mouse and turret position
-		shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y+turret.height/2, mouse.x - turret.x));
-		
-		// Prevent the angle from pointing downward
-		if (shootAngle > 0) {
-			if (shootAngle > 90)
-				shootAngle = 180;
-			else
-				shootAngle = 0;
+		if (turret != null)
+		{
+			// Calculate the shoot angle based off of mouse and turret position
+			shootAngle = Math.toDegrees(Math.atan2(mouse.y-turret.y+turret.height/2, mouse.x - turret.x));
+			
+			// Prevent the angle from pointing downward
+			if (shootAngle > 0) {
+				if (shootAngle > 90)
+					shootAngle = 180;
+				else
+					shootAngle = 0;
+			}
+			
+			// Convert the angle back to radians
+			shootAngle = Math.toRadians(shootAngle);
+			
+			// Update the turret
+			turret.update();
 		}
-		
-		// Convert the angle back to radians
-		shootAngle = Math.toRadians(shootAngle);
-		
-		// Update the turret
-		turret.update();
 		
 		// Update each object in each list
 		for (List<GameObject> list : objectList) {
@@ -229,6 +273,10 @@ public class MDGame extends JPanel implements MouseListener {
 					iter.remove();
 			}
 		}
+		
+		// End the game if all buildings have been destroyed
+		if (buildingList.size() < 1)
+			isEnding=true;
 	}
 	
 	// Spawns missiles and increases difficulty at a regular rate
@@ -237,6 +285,7 @@ public class MDGame extends JPanel implements MouseListener {
 		if (difficulty < 10) {
 			// At every difficulty change interval, change the difficulty and skip an action
 			if (timer - lastDifficultyChange >= 1000 * dcInterval) {
+				Sound.play("snd/DifficultyIncrease.wav");
 				difficulty += 0.3;
 				lastDifficultyChange = timer;
 				lastAction = timer;
@@ -273,10 +322,12 @@ public class MDGame extends JPanel implements MouseListener {
 		spawnY = -25;
 		
 		// Either shoot at the turret or one of the buildings. 
-		if (Math.round(Math.random())*buildingList.size()<0.5)
+		if (turret != null && Math.round(Math.random()*buildingList.size()) < 1)
 			target = (Building)turret;
-		else
+		else if (buildingList.size() > 0)
 			target = (Building)buildingList.get((int)Math.round((Math.random()*(buildingList.size()-1))));
+		else
+			return;
 		
 		// Angle from the missile position to the target
 		angle = Math.atan2(target.getY() + target.getHeight()/2 - spawnY, target.getX() - spawnX);
@@ -324,10 +375,15 @@ public class MDGame extends JPanel implements MouseListener {
 		}
 		
 		// Collision with turret
-		if (m.collides(turret.getArea())) {
-			turret.hit();
-			hasCollision = true;
+		if (turret != null) {
+			if (m.collides(turret.getArea())) {
+				turret.hit();
+				hasCollision = true;
+			}
 		}
+		
+		if (hasCollision)
+			Sound.play("snd/explosion.wav");
 		
 		return hasCollision;
 	}
@@ -349,10 +405,6 @@ public class MDGame extends JPanel implements MouseListener {
 		g2d.setColor(Color.BLACK);		
 		g2d.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
-		// Ground
-		//g2d.setColor(Color.DARK_GRAY);		
-		//g2d.fillRect(0, this.getHeight()-groundHeight, this.getWidth(), groundHeight);
-		
 		// Shells, Missiles, Buildings, and Walls
 		for (List<GameObject> list : objectList) {
 			for (GameObject obj : list)
@@ -360,81 +412,117 @@ public class MDGame extends JPanel implements MouseListener {
 		}
 		
 		// Turret
-		turret.render(g2d);
+		if (turret != null)
+			turret.render(g2d);
 
 		////// GUI COMPONENTS //////
-		////// Timer Text
+		// I use this string to temporarily hold the string that I need to alter before drawing
+		String drawString;
+		// This rectangle represents the size of the value held in drawString
+		Rectangle2D strSize;
+		// GUI Components are all white
 		g2d.setColor(Color.WHITE);
-		g2d.setFont(new Font("Verdana", Font.BOLD, 20));
 		
-		// Convert time elapsed to a string with format "HH:mm:MM"
-		String timerStr = String.format("%02d:%02d",
-				TimeUnit.MILLISECONDS.toMinutes(timer),
-				TimeUnit.MILLISECONDS.toSeconds(timer) - 
-				TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer)));
-		// We do this in order to center the string no matter the font, size, or length. It gets a rectangle with the size of the font
-		Rectangle2D strSize = g2d.getFontMetrics().getStringBounds(timerStr, g2d);
-
-		g2d.drawString(timerStr,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight/2 + strSize.getHeight()/2));
-		 
 		////// Missile Speed Text
-		String mSpdString = String.format("SPEED x %.1f", difficulty);
+		drawString = String.format("SPEED x %.1f", difficulty);
 		
 		g2d.setFont(new Font("Verdana", Font.BOLD, 10));
-		strSize = g2d.getFontMetrics().getStringBounds(mSpdString, g2d);
-		g2d.drawString(mSpdString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight*3/4 + strSize.getHeight()/2));
+		strSize = g2d.getFontMetrics().getStringBounds(drawString, g2d);
+		g2d.drawString(drawString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight*3/4 + strSize.getHeight()/2));
+		
+		////// Timer Text
+		g2d.setFont(new Font("Verdana", Font.BOLD, 20));
+		
+		// Convert time elapsed to a string with format "mm:ss"
+		drawString = main.timeString(timer);
+		
+		// We do this in order to center the string no matter the font, size, or length. It gets a rectangle with the size of the font
+		strSize = g2d.getFontMetrics().getStringBounds(drawString, g2d);
 
+		g2d.drawString(drawString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight/2 + strSize.getHeight()/2));
+
+		////// Next High Score Text
+		// Displays the next high score to beat below your current time
+		
+		// Most of these will be using the same functions with different values, so I will leave the comments out for repeat lines
+		g2d.setFont(new Font("Verdana", Font.BOLD, 10));
+		
+		drawString = "NEXT HIGH: " + main.timeString(getNextHighScore(timer));
+		strSize = g2d.getFontMetrics().getStringBounds(drawString, g2d);
+		g2d.drawString(drawString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()-groundHeight*1/4 + strSize.getHeight()/2));
+
+		////// Game Over Text
+		// Displays text in the middle of the screen when you meet the fail conditions
+		if (isEnding)
+		{
+			drawString = "GAME OVER - The city is lost!";
+			
+			g2d.setFont(new Font("Verdana", Font.BOLD, 30));
+			strSize = g2d.getFontMetrics().getStringBounds(drawString, g2d);
+			g2d.drawString(drawString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()/2 - strSize.getHeight()/2));
+		}
+		
 		////// Speed Increase Text
+		// Displays text in the middle of the screen when the difficulty changes
+		
+		// Amount of time that has passed since the difficulty was adjusted
 		long lda = timer - lastDifficultyChange;
 		
 		if (lda < 1500 && timer > 1500)
 		{
+			// Starts fading out in the last half second
 			if (lda - 1000 >= 0)
 				g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f - (float)(lda - 1000)/500));
 			
-			String diString = "DIFFICULTY INCREASED!";
+			drawString = "DIFFICULTY INCREASED!";
 			
+			// Draws it in the very center of the screen (taking its own width and height into account)
 			g2d.setFont(new Font("Verdana", Font.BOLD, 30));
-			strSize = g2d.getFontMetrics().getStringBounds(diString, g2d);
-			g2d.drawString(diString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()/2 - strSize.getHeight()/2 - 50 * ((float)lda/1500) ));
+			strSize = g2d.getFontMetrics().getStringBounds(drawString, g2d);
+			g2d.drawString(drawString,(int)(getWidth()/2 - strSize.getWidth()/2), (int)(getHeight()/2 - strSize.getHeight()/2 - 50 * ((float)lda/1500) ));
 			
+			// Sets drawing back to opaque
 			g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,1f));
 		}
 		
 		////// Cursor
+		// Draws the cursor at the mouse position
 		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
 		
 		////// Ammo Indicator
-		boolean loaded = (turret.getAmmo() > 0);
-		
-		int ammo=turret.getAmmo(), maxAmmo=turret.getMaxAmmo(), ammoX=mouse.x-16, ammoY=mouse.y+24;
-		
-		////// Draw "ammo dots" for each shell to indicate how much you have left
-		for (int i=0;i<maxAmmo;i++) {
-			loaded = (i < ammo);
+		// Draws the ammuntion left at the cursor (as long as the turret still exists)
+		if (turret != null) {
+			boolean loaded = (turret.getAmmo() > 0);
 			
-			// If out of ammo at this point, set the color to gray (because it draws from left to right, we do not need logic to change the color to white)
-			if (!loaded) {
-				g2d.setColor(Color.GRAY);
+			int ammo=turret.getAmmo(), maxAmmo=turret.getMaxAmmo(), ammoX=mouse.x-16, ammoY=mouse.y+24;
+			
+			////// Draw "ammo dots" for each shell to indicate how much you have left
+			for (int i=0;i<maxAmmo;i++) {
+				loaded = (i < ammo);
+				
+				// If out of ammo at this point, set the color to gray (because it draws from left to right, we do not need logic to change the color to white)
+				if (!loaded) {
+					g2d.setColor(Color.GRAY);
+				}
+				
+				g2d.drawOval(ammoX, ammoY, 2, 2);
+				
+				// If this shell has been fired, don't fill it in
+				if (loaded)
+					g2d.fillOval(ammoX, ammoY, 2, 2);
+				
+				ammoX += 8;
 			}
 			
-			g2d.drawOval(ammoX, ammoY, 2, 2);
-			
-			// If this shell has been fired, don't fill it in
-			if (loaded)
-				g2d.fillOval(ammoX, ammoY, 2, 2);
-			
-			ammoX += 8;
-		}
-		
-		// Draw reload bar on top of the "ammo dots"
-		if (ammo <= 0)
-		{
-			g2d.setColor(Color.WHITE);
-			
-			double reloadTime = turret.getReloadTime(), maxReloadTime = turret.getMaxReloadTime();
-			
-			g2d.fillRect((int)(mouse.x-16*(reloadTime/maxReloadTime)), ammoY, (int)(36*(reloadTime/maxReloadTime)), 4);
+			// Draw reload bar on top of the "ammo dots"
+			if (ammo <= 0)
+			{
+				g2d.setColor(Color.WHITE);
+				
+				double reloadTime = turret.getReloadTime(), maxReloadTime = turret.getMaxReloadTime();
+				
+				g2d.fillRect((int)(mouse.x-16*(reloadTime/maxReloadTime)), ammoY, (int)(36*(reloadTime/maxReloadTime)), 4);
+			}
 		}
 	}
 	
@@ -447,6 +535,8 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	public void removeFromList(Building building) {
 		buildingList.remove(building);
+		
+		Sound.play("snd/BuildingCollapse.wav");
 	}
 	
 	public void removeFromList(Missile missile) {
@@ -460,11 +550,13 @@ public class MDGame extends JPanel implements MouseListener {
 	// If it was the left button, shoot. Otherwise, reload.
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if (SwingUtilities.isLeftMouseButton(e)) {
-			if (turret.canShoot())
-				shellList.add(turret.shoot());
-		} else {
-			turret.startReload();
+		if (turret !=null) {
+			if (SwingUtilities.isLeftMouseButton(e)) {
+				if (turret.canShoot())
+					shellList.add(turret.shoot());
+			} else {
+				turret.startReload();
+			}
 		}
 	}
 
