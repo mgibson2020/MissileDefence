@@ -41,7 +41,7 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	// Setup
 	boolean running = false, isEnding=false;
-	public int groundHeight = 6;
+	public int groundHeight = 60;
 	BufferedImage cursorImage;
 	Turret turret;
 	Wall ground, turretStand;
