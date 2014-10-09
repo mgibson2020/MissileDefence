@@ -1,4 +1,9 @@
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.*;
+import java.util.Arrays;
+
 import javax.swing.*;
 
 @SuppressWarnings("serial")
@@ -9,32 +14,35 @@ public class MDMenu extends JPanel implements ActionListener {
 	public MDMenu(MDMain main, long[] highScores) {
 		this.main = main;
 		
-		/* You will probably want to give this a layout like borderlayout or gridlayout;
-		 * I don't quite remember all the kinds,  but I think the default is FlowLayout
-		 * which just kind of fits things wherever it can.
-		 */
-		
 		// Initialize Components
-		
+		JLabel title = new JLabel("Missile Defense", SwingConstants.CENTER);
+		JLabel scores = new JLabel("High Scores \n\n " + highScores[2], SwingConstants.CENTER);
+		JPanel panel = new JPanel();
 		jbtStart = new JButton("Start Game");
-		
-		// You will need to show a list of the high scores, which are pulled from MDMain in the constructor above
-		
+		title.setFont(new Font("Verdana", Font.BOLD, 50));
+		title.setForeground(Color.WHITE);
+		jbtStart.setFont(new Font("Verdana", Font.BOLD, 30));
+		jbtStart.setBackground(Color.BLACK);
+		jbtStart.setBorder(null);
+		jbtStart.setForeground(Color.WHITE);
 		
 		// Add Components
-		
-		add(jbtStart);
-		
+		setBackground(Color.BLACK);
+		setLayout(new GridLayout(3, 1));
+		add(title);
+		add(panel);
+		panel.setBackground(Color.BLACK);
+		panel.add(jbtStart);
+		add(scores);
 		
 		// Add Listeners
-		
 		jbtStart.addActionListener(this);
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		
-		if (source == jbtStart) {			
+		if (source == jbtStart) {	
 			main.newGame();
 		}
 	}

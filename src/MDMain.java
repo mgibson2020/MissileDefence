@@ -1,16 +1,21 @@
 import javax.swing.*;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class MDMain extends JFrame {
 	private JPanel deck, mainMenu;
 	private MDGame game;
 	private CardLayout cardManager;
+	private BufferedReader reader;
 	
 	public long[] highScores;
 	
-	public MDMain() {
+	public MDMain() throws IOException {
 		readHighscores();
 		
 		Container container = getContentPane();
@@ -33,9 +38,17 @@ public class MDMain extends JFrame {
 		setVisible(true);
 	}
 	
-	public void readHighscores() {
+	public void readHighscores() throws IOException {
 		// This will be replaced with a text reader
 		highScores = new long[10];
+		reader = new BufferedReader(new FileReader("src/scores.txt"));
+		long tmp;
+		int i = 0;
+		while(reader.readLine() != null) {
+			tmp = (long)(reader.read());
+			highScores[i] = tmp;
+			i++;
+		}
 	}
 	
 	public void newGame() {
@@ -52,7 +65,7 @@ public class MDMain extends JFrame {
 		this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		JFrame frame = new MDMain();
 		frame.setTitle("Missile Defense");
 		frame.setSize(800, 600);
