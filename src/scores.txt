@@ -1,5 +1,5 @@
 Exceptional,660000
-Quiteblank,644498
+JEWallace,644498
 Satisfying,600000
 Fantastic,540000
 Superior,480000

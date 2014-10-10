@@ -76,7 +76,18 @@ public class MDMain extends JFrame {
 		int i = 0;
 		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader("src/scores.txt"));
+			Reader input;
+			
+			// A new text file will be created if the scores are updated. In this case, read it.
+			try {
+				input = new FileReader("scores.txt");
+			}
+			catch (Exception e) {
+				// If the other file doesn't exist, use the default.
+				input = new InputStreamReader(getClass().getResourceAsStream("/scores.txt"));
+			}
+				
+			BufferedReader reader = new BufferedReader(input);//new InputStreamReader(getClass().getResourceAsStream("/scores.txt")));
 			try {
 				String line = null;
 				while (i < 10 && (line = reader.readLine()) != null) {
@@ -97,7 +108,7 @@ public class MDMain extends JFrame {
 	
 	// Start a new game
 	public void newGame() {
-		try {
+		try {			
 			game.startGame();
 			
 			cardManager.show(deck, "Game");
@@ -158,9 +169,9 @@ public class MDMain extends JFrame {
 	}
 	
 	// Write the scores to a file
-	private void updateScoreFile() {
+	private void updateScoreFile() {		
 		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("src/scores.txt", false)));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("scores.txt", false)));
 			try {
 				for (int i=0; i<10; i++) {
 					writer.write(hsNames[i]+","+hsScores[i]);

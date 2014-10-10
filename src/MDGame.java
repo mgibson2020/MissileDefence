@@ -20,7 +20,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -85,7 +84,7 @@ public class MDGame extends JPanel implements MouseListener {
 		
 		// Load the cursor image
 		try {
-			cursorImage = ImageIO.read(new File("img/cursor.png"));
+			cursorImage = ImageIO.read(getClass().getResourceAsStream("img/cursor.png"));
 		}
 		catch (Exception e) {
 			JOptionPane.showMessageDialog(this.getParent(), "ERROR: Cannot load the cursor image!","Cursor Load Error",JOptionPane.ERROR_MESSAGE);
