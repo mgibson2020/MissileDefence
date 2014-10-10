@@ -1,9 +1,9 @@
 Exceptional,660000
+Quiteblank,644498
 Satisfying,600000
 Fantastic,540000
 Superior,480000
 Amazing,420000
-Superb,415995
 Superb,360000
 Great,300000
 Good,240000

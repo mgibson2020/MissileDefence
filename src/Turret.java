@@ -21,9 +21,10 @@ public class Turret extends Building {
 	// Constructor
 	public Turret(MDGame game) {
 		this.game = game;
-		health = maxHealth = 60;
+		health = maxHealth = 6;
 		ammo = maxAmmo = 5;
-		maxReloadTime = 150;
+		reloadTime = 0;
+		maxReloadTime = 300;
 		
 		x = game.getWidth()/2;
 		y = game.getHeight() - game.groundHeight - 45;
@@ -89,7 +90,7 @@ public class Turret extends Building {
 			else
 			{
 				// Reload time decreases as the difficulty mounts
-				maxReloadTime = (int)(150 / game.difficulty);
+				maxReloadTime = (int)(300 / game.difficulty);
 			}
 		}
 		else onDeath();

@@ -61,7 +61,7 @@ public class MDGame extends JPanel implements MouseListener {
 	
 	// Missile frequency and difficulty
 	public double missileSpeed = 0.5, difficulty = 1;
-	public int actionInterval = 5, dcInterval = 30, missilesToSpawn = 1;
+	public int actionInterval = 5, dcInterval = 60, missilesToSpawn = 1;
 	long lastAction = 0, lastDifficultyChange = 0;
 	
 	// Aiming
@@ -132,14 +132,6 @@ public class MDGame extends JPanel implements MouseListener {
 	public void endGame() {
 		// Stopping game thread
 		running = false;
-		
-		// Clearing all game object variables and listeners
-		for (List<GameObject> list : objectList) {
-			list.clear();
-		}
-		objectList.clear();
-		turret = null;
-		removeMouseListener(this);
 		
 		// Showing game end message
 		String hsName = null;
@@ -226,11 +218,15 @@ public class MDGame extends JPanel implements MouseListener {
 		else
 		{
 			// This will adjust difficulty and spawn missiles
-			enemyActions();
+			//enemyActions();
 			
 			// Get the time that has elapsed since the game started
+			// Don't update this if the player has lost, however
 			timer = System.currentTimeMillis() - startTime;
 		}
+		
+		// This will adjust difficulty and spawn missiles
+		enemyActions();
 		
 		// Get the current mouse location and convert it to the location relative to the window
 		mouse = MouseInfo.getPointerInfo().getLocation();
@@ -286,7 +282,8 @@ public class MDGame extends JPanel implements MouseListener {
 			// At every difficulty change interval, change the difficulty and skip an action
 			if (timer - lastDifficultyChange >= 1000 * dcInterval) {
 				Sound.play("snd/DifficultyIncrease.wav");
-				difficulty += 0.3;
+				difficulty += 0.5;
+				//difficulty += 0.3;
 				lastDifficultyChange = timer;
 				lastAction = timer;
 			}
@@ -294,9 +291,18 @@ public class MDGame extends JPanel implements MouseListener {
 		
 		// Spawning more missiles
 		if (timer - lastAction >= 1000 * actionInterval) {
-			// Only spawn AT MOST 3 missiles every action.
-			// Also, there cannot be more than 5 missiles at any given time.
-			missilesToSpawn = Math.min(3, 5 - missileList.size());
+			// After the difficulty first changes, only 1 missile can spawn at a time
+			// After 1/3 of the difficulty change duration has passed, 2 missiles can be spawned
+			// After 2/3 of the difficulty change duration has passed, 3 missiles can be spawned
+			// EX: With difficulty changing every 60 seconds:
+			//      At 00 - 19 seconds - 1 missile  maximum
+			//		At 20 - 39 seconds - 2 missiles maximum
+			//		At 40 - 59 seconds - 3 missiles maximum
+			missilesToSpawn = Math.min(1 + (int)((timer - lastDifficultyChange)/(1000*dcInterval/3)),3);
+			
+			// Only spawn AT MOST 3 missiles at a time
+			missilesToSpawn = Math.min(missilesToSpawn, 3 - missileList.size());
+			
 			lastAction = timer;
 		}
 		else
@@ -344,37 +350,24 @@ public class MDGame extends JPanel implements MouseListener {
 	public boolean checkCollisions(Missile m) {
 		boolean hasCollision = false;
 		
-		// Collision with shells
-		GameObject[] goArray = shellList.toArray(new GameObject[shellList.size()]);
+		// We do not want to check for collision against missiles
+		objectList.remove(missileList);
 		
-		for (GameObject go : goArray) {
-			if (m.collides(go.getArea())) {
-				go.canRemove = true;
-				hasCollision = true;
+		// Check for collision with every object in every list
+		for (List<GameObject> list : objectList) {
+			GameObject[] goArray = list.toArray(new GameObject[list.size()]);
+			
+			for (GameObject go : goArray) {
+				if (m.collides(go.getArea())) {
+					go.hit();
+					hasCollision = true;
+				}
 			}
 		}
 		
-		// Collision with buildings
-		goArray = buildingList.toArray(new GameObject[buildingList.size()]);
+		objectList.add(missileList);
 		
-		for (GameObject go : goArray) {
-			if (m.collides(go.getArea())) {
-				Building b = (Building)go;
-				b.hit();
-				hasCollision = true;
-			}
-		}
-		
-		// Collision with walls (the ground and turret stand
-		goArray = wallList.toArray(new GameObject[wallList.size()]);
-		
-		for (GameObject go : goArray) {
-			if (m.collides(go.getArea())) {
-				hasCollision = true;
-			}
-		}
-		
-		// Collision with turret
+		// Check for collision with the turret
 		if (turret != null) {
 			if (m.collides(turret.getArea())) {
 				turret.hit();
@@ -490,7 +483,7 @@ public class MDGame extends JPanel implements MouseListener {
 		g2d.drawImage(cursorImage,mouse.x-cursorImage.getWidth()/2,mouse.y-cursorImage.getHeight()/2,null);
 		
 		////// Ammo Indicator
-		// Draws the ammuntion left at the cursor (as long as the turret still exists)
+		// Draws the ammunition left at the cursor (as long as the turret still exists)
 		if (turret != null) {
 			boolean loaded = (turret.getAmmo() > 0);
 			

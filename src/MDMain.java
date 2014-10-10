@@ -147,6 +147,14 @@ public class MDMain extends JFrame {
 		
 		// Show the menu
 		cardManager.show(deck, "Menu");
+		
+		// Remove the old game object and create a new one in its place
+		deck.remove(game);
+		deck.revalidate();
+		
+		game = new MDGame(this, hsScores);
+		
+		deck.add(game, "Game");
 	}
 	
 	// Write the scores to a file

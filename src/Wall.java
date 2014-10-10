@@ -22,6 +22,10 @@ public class Wall extends GameObject {
 		this.color = color;
 	}
 	
+	public void hit() {
+		// This doesn't remove when hit
+	}
+	
 	public Area getArea() {
 		return new Area(new Rectangle((int)x, (int)y, width, height));
 	}
