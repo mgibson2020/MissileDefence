@@ -375,7 +375,7 @@ public class MDGame extends JPanel implements MouseListener {
 		}
 		
 		if (hasCollision)
-			Sound.play("snd/explosion.wav");
+			Sound.play("snd/Explosion.wav");
 		
 		return hasCollision;
 	}
