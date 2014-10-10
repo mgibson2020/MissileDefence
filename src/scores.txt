@@ -2,9 +2,9 @@ Exceptional,660000
 JEWallace,644498
 Satisfying,600000
 Fantastic,540000
+MGibson,503000
 Superior,480000
 Amazing,420000
 Superb,360000
 Great,300000
 Good,240000
-Meh,180000
